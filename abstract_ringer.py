@@ -1,5 +1,6 @@
 import threading
 import physical_bell
+import const
 from const import test
 
 class Ringer():
@@ -9,7 +10,9 @@ class Ringer():
         self.checkrep()
 
     def ring(self):
+        print "ACQUIRING RING LOCK.."
         self.lock.acquire()
+        print "ACQUIRED!"
         if self.number == 0:
             self._ring()
         self.number += 1
@@ -25,9 +28,11 @@ class Ringer():
         self.checkrep()
 
     def _ring(self):
+        const.narrate("RINGING")
         physical_bell.physical_ring()
 
     def _stop(self):
+        const.narrate("STOPPING")
         physical_bell.physical_kill()
 
     def checkrep(self):

@@ -15,6 +15,7 @@ def parseBareTime(timeString):
     parsed = datetime.datetime.now()
     parsed = parsed.replace(hour=hour, minute=minute, second=0)
     while parsed < datetime.datetime.now():
+        const.narrate("Interpreting time to mean tomorrow...")
         parsed += datetime.timedelta(days=1)
     const.narrate("Interpreting " + timeString + " as " + str(parsed))
     return parsed

@@ -8,6 +8,7 @@ import Queue
 import sys
 import calendar
 import abstract_ringer
+import subprocess
 
 queues = {}
 state = state.load_state()
@@ -23,6 +24,9 @@ def wait_for_alarms():
 def run_command(command):
     if command == "SHOW":
         print state.alarms
+        return
+    if command == "ACTIVES?":
+        print len(queues)
         return
     try:
         state.add_alarm(parsing.parseRange(command))
@@ -40,8 +44,14 @@ def listen_for_commands():
         run_command(command)
 
 def listen_for_buttons():
-    for command in button_inputs.presses():
+    P = subprocess.Popen(["python", "-u", "button_inputs.py"], bufsize=0, shell=False, stderr=None, stdout=subprocess.PIPE)
+    print "ITERABLE TO READ FROM BUTTON INPUTS!"
+    while True:
+        command = P.stdout.readline()
+        command = command.strip()
+        print command
         if not dispatch_command(command):
+            print "ATTEMPT TO RING!"
             ringer.ring()
             time.sleep(1)
             ringer.stop()
@@ -56,7 +66,12 @@ def dispatch_command(command):
     need_note = queues.values()
     for q in need_note:
         thread.start_new_thread(try_to_deliver, (command, q))
-    return len(need_note) > 0
+    out = len(need_note) != 0
+    if out:
+        print "DID DISPATCH!"
+    else:
+        print "NO QUEUES TO DISPATCH TO!"
+    return out
 
 thread.start_new_thread(wait_for_alarms, ())
 thread.start_new_thread(listen_for_buttons, ())
